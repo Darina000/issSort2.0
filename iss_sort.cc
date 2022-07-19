@@ -53,9 +53,12 @@ std::string datadir_name = "/eos/experiment/isolde-iss/2022/ISS";
 std::string name_set_file;
 std::string name_cal_file;
 std::string name_react_file;
+
+
 std::vector<std::string> input_names;
 
 
+//std::vector<std::string> input_dataspy;
 std::vector<std::string> input_dataspy;
 
 // a flag at the input to force or not the conversion
@@ -353,43 +356,86 @@ void do_convert(bool flag_spy){ //if spy - true
 	std::ifstream ftest;
 	std::string name_input_file;
 	std::string name_output_file;
+    
+    
+    
+   // std::vector<std::string> input_names;
+   // std::vector<std::string> input_dataspy;
 	
 	// Check each file
-	for( unsigned int i = 0; i < input_names.size(); i++ ){
-			
-		name_input_file = input_names.at(i);
-		if( flag_source ) name_output_file = input_names.at(i) + "_source.root";
-		else name_output_file = input_names.at(i) + ".root";
+    if (flag_spy){
+        for( unsigned int i = 0; i < input_dataspy.size(); i++ ){
+                
+            name_input_file = input_dataspy.at(i);
+            if( flag_source ) name_output_file = input_dataspy.at(i) + "_source.root";
+            else name_output_file = input_dataspy.at(i) + ".root";
 
-		force_convert.push_back( false );
+            force_convert.push_back( false );
 
-		// If it doesn't exist, we have to convert it anyway
-		// The convert flag will force it to be converted
-		ftest.open( name_output_file.data() );
-		if( !ftest.is_open() ) force_convert.at(i) = true;
-		else {
-			ftest.close();
-			rtest = new TFile( name_output_file.data() );
-			if( rtest->IsZombie() ) force_convert.at(i) = true;
-			if( !flag_convert && !force_convert.at(i) )
-				std::cout << name_output_file << " already converted" << std::endl;
-			rtest->Close();
-		}
+            // If it doesn't exist, we have to convert it anyway
+            // The convert flag will force it to be converted
+            ftest.open( name_output_file.data() );
+            if( !ftest.is_open() ) force_convert.at(i) = true;
+            else {
+                ftest.close();
+                rtest = new TFile( name_output_file.data() );
+                if( rtest->IsZombie() ) force_convert.at(i) = true;
+                if( !flag_convert && !force_convert.at(i) )
+                    std::cout << name_output_file << " already converted" << std::endl;
+                rtest->Close();
+            }
 
-		if( flag_convert || force_convert.at(i) ) {
-			
-			std::cout << name_input_file << " --> ";
-			std::cout << name_output_file << std::endl;
-			
-			conv.SetOutput( name_output_file );
-			conv.MakeTree();
-			conv.MakeHists();
-			conv.ConvertFile( name_input_file );
-			conv.CloseOutput();
+            if( flag_convert || force_convert.at(i) ) {
+                
+                std::cout << name_input_file << " --> ";
+                std::cout << name_output_file << std::endl;
+                
+                conv.SetOutput( name_output_file );
+                conv.MakeTree();
+                conv.MakeHists();
+                conv.ConvertFile( name_input_file );
+                conv.CloseOutput();
 
-		}
-		
-	}
+            }
+            
+        }
+    } else{
+        for( unsigned int i = 0; i < input_names.size(); i++ ){
+                
+            name_input_file = input_names.at(i);
+            if( flag_source ) name_output_file = input_names.at(i) + "_source.root";
+            else name_output_file = input_names.at(i) + ".root";
+
+            force_convert.push_back( false );
+
+            // If it doesn't exist, we have to convert it anyway
+            // The convert flag will force it to be converted
+            ftest.open( name_output_file.data() );
+            if( !ftest.is_open() ) force_convert.at(i) = true;
+            else {
+                ftest.close();
+                rtest = new TFile( name_output_file.data() );
+                if( rtest->IsZombie() ) force_convert.at(i) = true;
+                if( !flag_convert && !force_convert.at(i) )
+                    std::cout << name_output_file << " already converted" << std::endl;
+                rtest->Close();
+            }
+
+            if( flag_convert || force_convert.at(i) ) {
+                
+                std::cout << name_input_file << " --> ";
+                std::cout << name_output_file << std::endl;
+                
+                conv.SetOutput( name_output_file );
+                conv.MakeTree();
+                conv.MakeHists();
+                conv.ConvertFile( name_input_file );
+                conv.CloseOutput();
+
+            }
+            
+        }
+    }
 	
 	return;
 	
@@ -410,48 +456,93 @@ void do_sort(bool flag_spy){
 	std::string name_output_file;
 	
 	// Check each file
-	for( unsigned int i = 0; i < input_names.size(); i++ ){
+    if(flag_spy){
+        for( unsigned int i = 0; i < input_dataspy.size(); i++ ){
 
-		name_input_file = input_names.at(i) + ".root";
-		name_output_file = input_names.at(i) + "_sort.root";
+            name_input_file = input_dataspy.at(i) + ".root";
+            name_output_file = input_dataspy.at(i) + "_sort.root";
 
-		// We need to time sort it if we just converted it
-		if( flag_convert || force_convert.at(i) )
-			force_sort = true;
+            // We need to time sort it if we just converted it
+            if( flag_convert || force_convert.at(i) )
+                force_sort = true;
 
-		// If it doesn't exist, we have to sort it anyway
-		else {
+            // If it doesn't exist, we have to sort it anyway
+            else {
 
-			ftest.open( name_output_file.data() );
-			if( !ftest.is_open() ) force_sort = true;
-			else {
+                ftest.open( name_output_file.data() );
+                if( !ftest.is_open() ) force_sort = true;
+                else {
 
-				ftest.close();
-				rtest = new TFile( name_output_file.data() );
-				if( rtest->IsZombie() ) force_sort = true;
-				if( !force_sort )
-					std::cout << name_output_file << " already sorted" << std::endl;
-				rtest->Close();
+                    ftest.close();
+                    rtest = new TFile( name_output_file.data() );
+                    if( rtest->IsZombie() ) force_sort = true;
+                    if( !force_sort )
+                        std::cout << name_output_file << " already sorted" << std::endl;
+                    rtest->Close();
 
-			}
+                }
 
-		}
+            }
 
-		if( force_sort ) {
+            if( force_sort ) {
 
-			std::cout << name_input_file << " --> ";
-			std::cout << name_output_file << std::endl;
+                std::cout << name_input_file << " --> ";
+                std::cout << name_output_file << std::endl;
 
-			sort.SetInputFile( name_input_file );
-			sort.SetOutput( name_output_file );
-			sort.SortFile();
-			sort.CloseOutput();
+                sort.SetInputFile( name_input_file );
+                sort.SetOutput( name_output_file );
+                sort.SortFile();
+                sort.CloseOutput();
 
-			force_sort = false;
+                force_sort = false;
 
-		}
+            }
 
-	}
+        }
+    }else{
+        for( unsigned int i = 0; i < input_names.size(); i++ ){
+
+            name_input_file = input_names.at(i) + ".root";
+            name_output_file = input_names.at(i) + "_sort.root";
+
+            // We need to time sort it if we just converted it
+            if( flag_convert || force_convert.at(i) )
+                force_sort = true;
+
+            // If it doesn't exist, we have to sort it anyway
+            else {
+
+                ftest.open( name_output_file.data() );
+                if( !ftest.is_open() ) force_sort = true;
+                else {
+
+                    ftest.close();
+                    rtest = new TFile( name_output_file.data() );
+                    if( rtest->IsZombie() ) force_sort = true;
+                    if( !force_sort )
+                        std::cout << name_output_file << " already sorted" << std::endl;
+                    rtest->Close();
+
+                }
+
+            }
+
+            if( force_sort ) {
+
+                std::cout << name_input_file << " --> ";
+                std::cout << name_output_file << std::endl;
+
+                sort.SetInputFile( name_input_file );
+                sort.SetOutput( name_output_file );
+                sort.SortFile();
+                sort.CloseOutput();
+
+                force_sort = false;
+
+            }
+
+        }
+    }
 	
 	return;
 	
@@ -474,50 +565,97 @@ void do_build(bool flag_spy){
 	if( overwrite_cal ) eb.AddCalibration( mycal ); //use  EventBuilder
 
 	// Do event builder for each file individually
-	for( unsigned int i = 0; i < input_names.size(); i++ ){
-			
-		name_input_file = input_names.at(i) + "_sort.root";
-		name_output_file = input_names.at(i) + "_events.root";
+    if (flag_spy){
+        for( unsigned int i = 0; i < input_dataspy.size(); i++ ){
+                
+            name_input_file = input_dataspy.at(i) + "_sort.root";
+            name_output_file = input_dataspy.at(i) + "_events.root";
 
-		// We need to do event builder if we just converted it
-		// specific request to do new event build with -e
-		// this is useful if you need to add a new calibration
-		if( flag_convert || force_convert.at(i) || flag_events )
-			force_events = true;
+            // We need to do event builder if we just converted it
+            // specific request to do new event build with -e
+            // this is useful if you need to add a new calibration
+            if( flag_convert || force_convert.at(i) || flag_events )
+                force_events = true;
 
-		// If it doesn't exist, we have to sort it anyway
-		else {
-			
-			ftest.open( name_output_file.data() );
-			if( !ftest.is_open() ) force_events = true;
-			else {
-				
-				ftest.close();
-				rtest = new TFile( name_output_file.data() );
-				if( rtest->IsZombie() ) force_events = true;
-				if( !force_events )
-					std::cout << name_output_file << " already built" << std::endl;
-				rtest->Close();
-				
-			}
-			
-		}
-		
-		if( force_events ) {
+            // If it doesn't exist, we have to sort it anyway
+            else {
+                
+                ftest.open( name_output_file.data() );
+                if( !ftest.is_open() ) force_events = true;
+                else {
+                    
+                    ftest.close();
+                    rtest = new TFile( name_output_file.data() );
+                    if( rtest->IsZombie() ) force_events = true;
+                    if( !force_events )
+                        std::cout << name_output_file << " already built" << std::endl;
+                    rtest->Close();
+                    
+                }
+                
+            }
+            
+            if( force_events ) {
 
-			std::cout << name_input_file << " --> ";
-			std::cout << name_output_file << std::endl;
+                std::cout << name_input_file << " --> ";
+                std::cout << name_output_file << std::endl;
 
-			eb.SetInputFile( name_input_file, flag_spy ); //use  EventBuilder
-			eb.SetOutput( name_output_file ); //use  EventBuilder
-			eb.BuildEvents(); //use  EventBuilder
-			eb.CloseOutput(); //use  EventBuilder
-		
-			force_events = false;
-			
-		}
-		
-	}
+                eb.SetInputFile( name_input_file, flag_spy ); //use  EventBuilder
+                eb.SetOutput( name_output_file ); //use  EventBuilder
+                eb.BuildEvents(); //use  EventBuilder
+                eb.CloseOutput(); //use  EventBuilder
+            
+                force_events = false;
+                
+            }
+            
+        }
+    }else{
+        for( unsigned int i = 0; i < input_names.size(); i++ ){
+                
+            name_input_file = input_names.at(i) + "_sort.root";
+            name_output_file = input_names.at(i) + "_events.root";
+
+            // We need to do event builder if we just converted it
+            // specific request to do new event build with -e
+            // this is useful if you need to add a new calibration
+            if( flag_convert || force_convert.at(i) || flag_events )
+                force_events = true;
+
+            // If it doesn't exist, we have to sort it anyway
+            else {
+                
+                ftest.open( name_output_file.data() );
+                if( !ftest.is_open() ) force_events = true;
+                else {
+                    
+                    ftest.close();
+                    rtest = new TFile( name_output_file.data() );
+                    if( rtest->IsZombie() ) force_events = true;
+                    if( !force_events )
+                        std::cout << name_output_file << " already built" << std::endl;
+                    rtest->Close();
+                    
+                }
+                
+            }
+            
+            if( force_events ) {
+
+                std::cout << name_input_file << " --> ";
+                std::cout << name_output_file << std::endl;
+
+                eb.SetInputFile( name_input_file, flag_spy ); //use  EventBuilder
+                eb.SetOutput( name_output_file ); //use  EventBuilder
+                eb.BuildEvents(); //use  EventBuilder
+                eb.CloseOutput(); //use  EventBuilder
+            
+                force_events = false;
+                
+            }
+            
+        }
+    }
 	
 	return;
 	
@@ -539,12 +677,22 @@ void do_hist(bool flag_spy){
 	std::vector<std::string> name_hist_files;
 	
 	// We are going to chain all the event files now
-	for( unsigned int i = 0; i < input_names.size(); i++ ){
+    
+    if(flag_spy){
+        for( unsigned int i = 0; i < input_dataspy.size(); i++ ){
 
-		name_output_file = input_names.at(i) + "_events.root";
-		name_hist_files.push_back( name_output_file );
-		
-	}
+            name_output_file = input_dataspy.at(i) + "_events.root";
+            name_hist_files.push_back( name_output_file );
+            
+        }
+    }else{
+        for( unsigned int i = 0; i < input_names.size(); i++ ){
+
+            name_output_file = input_names.at(i) + "_events.root";
+            name_hist_files.push_back( name_output_file );
+            
+        }
+    }
 
 	hist.SetInputFile( name_hist_files ); //use Histogrammer
 	hist.FillHists(); //use Histogrammer
@@ -571,33 +719,63 @@ void do_autocal(){
 	std::string name_results_file = "autocal_results.cal";
 
 	// Check each file
-	for( unsigned int i = 0; i < input_names.size(); i++ ){
-			
-		name_input_file = input_names.at(i) + "_source.root";
+    if(flag_spy){
+        for( unsigned int i = 0; i < input_dataspy.size(); i++ ){
+                
+            name_input_file = input_dataspy.at(i) + "_source.root";
 
-		// Add to list if the converted file exists
-		ftest.open( name_input_file.data() );
-		if( ftest.is_open() ) {
-		
-			ftest.close();
-			rtest = new TFile( name_input_file.data() );
-			if( !rtest->IsZombie() ) {
-				hadd_file_list += " " + name_input_file;
-			}
-			else {
-				std::cout << "Skipping " << name_input_file;
-				std::cout << ", it's broken" << std::endl;
-			}
-			rtest->Close();
-			
-		}
-		
-		else {
-			std::cout << "Skipping " << name_input_file;
-			std::cout << ", file does not exist" << std::endl;
-		}
+            // Add to list if the converted file exists
+            ftest.open( name_input_file.data() );
+            if( ftest.is_open() ) {
+            
+                ftest.close();
+                rtest = new TFile( name_input_file.data() );
+                if( !rtest->IsZombie() ) {
+                    hadd_file_list += " " + name_input_file;
+                }
+                else {
+                    std::cout << "Skipping " << name_input_file;
+                    std::cout << ", it's broken" << std::endl;
+                }
+                rtest->Close();
+                
+            }
+            
+            else {
+                std::cout << "Skipping " << name_input_file;
+                std::cout << ", file does not exist" << std::endl;
+            }
 
-	}
+        }
+    }else{
+        for( unsigned int i = 0; i < input_names.size(); i++ ){
+                
+            name_input_file = input_names.at(i) + "_source.root";
+
+            // Add to list if the converted file exists
+            ftest.open( name_input_file.data() );
+            if( ftest.is_open() ) {
+            
+                ftest.close();
+                rtest = new TFile( name_input_file.data() );
+                if( !rtest->IsZombie() ) {
+                    hadd_file_list += " " + name_input_file;
+                }
+                else {
+                    std::cout << "Skipping " << name_input_file;
+                    std::cout << ", it's broken" << std::endl;
+                }
+                rtest->Close();
+                
+            }
+            
+            else {
+                std::cout << "Skipping " << name_input_file;
+                std::cout << ", file does not exist" << std::endl;
+            }
+
+        }
+    }
 	
 	// Perform the hadd (doesn't work on Windows)
 	std::string cmd = "hadd -k -T -v 0 -f ";
@@ -656,6 +834,8 @@ int main( int argc, char *argv[] ){
 
 	interface->CheckFlags( argc, argv);
     
+    
+    
 	if( help_flag ) {
 		
 		interface->CheckFlags( 1, argv );
@@ -674,16 +854,12 @@ int main( int argc, char *argv[] ){
 	}
     
     
+
     
-    
-    
-    if( !input_dataspy.size() ) { // try to get data from dataspy
+    if( !input_dataspy.size() && !input_names.size() ) { // try to get data from dataspy
+        
             //std::cout << "You have to provide at least one input file or dataspy_file!" << std::endl;
-            return 1;
-        
-    }else if( !input_names.size() ) {
-        
-        std::cout << "You have to provide at least one input file or dataspy file!" << std::endl;
+           std::cout << "You have to provide at least one input file or dataspy file!" << std::endl;
         
         return 1;
         
@@ -691,31 +867,45 @@ int main( int argc, char *argv[] ){
     
     
     
+    
  
 	// Check if this is a source run
 	if( flag_autocal ) flag_source = true;
 	
+    
+    
 	// Check if we should be monitoring the input
-	if( mon_time > 0 && input_names.size() == 1 ) {
+	if( mon_time > 0 && (input_names.size() == 1 || input_dataspy.size() == 1 ) ) {
+        if (input_dataspy.size() == 1 ){
+            flag_monitor = true;
+            std::cout << "Running iss_sort in a loop every " << mon_time;
+            std::cout << " seconds\nMonitoring " << input_dataspy.at(0) << std::endl;
+        }else{
+            flag_monitor = true;
+            std::cout << "Running iss_sort in a loop every " << mon_time;
+            std::cout << " seconds\nMonitoring " << input_names.at(0) << std::endl;
+        }
 		
-		flag_monitor = true;
-		std::cout << "Running iss_sort in a loop every " << mon_time;
-		std::cout << " seconds\nMonitoring " << input_names.at(0) << std::endl;
-		
-	}else if( mon_time > 0 && input_names.size() != 1 ) {
+	}else if( mon_time > 0 && (input_names.size() != 1 || input_dataspy.size() != 1)) {
 		
 		flag_monitor = false;
 		std::cout << "Cannot monitor multiple input files, switching to normal mode" << std::endl;
 				
 	}
-	
-    
+
     
     
 	// Check the ouput file name
-	if( output_name.length() == 0 )
-		output_name = input_names.at(0) + "_hists.root";
+    if( output_name.length() == 0 ){
+        if (bool(input_names.size())){
+            output_name = input_names.at(0) + "_hists.root";
+        }else if (bool(input_dataspy.size())){
+            output_name = input_dataspy.at(0) + "_hists.root";
+        }
+    }
 	
+
+    
 	// Check we have a Settings file
 	if( name_set_file.length() > 0 ) {
 		std::cout << "Settings file: " << name_set_file << std::endl;
@@ -725,8 +915,9 @@ int main( int argc, char *argv[] ){
 		std::cout << "No settings file provided. Using defaults." << std::endl;
 		name_set_file = "dummy";
 
+        
 	}
-	
+
 	// Check we have a calibration file
 	if( name_cal_file.length() > 0 ) {
 		
@@ -740,7 +931,7 @@ int main( int argc, char *argv[] ){
 		name_cal_file = "dummy";
 
 	}
-	
+    
 	// Check we have a reaction file
 	if( name_react_file.length() > 0 ) {
 		
@@ -753,8 +944,7 @@ int main( int argc, char *argv[] ){
 		name_react_file = "dummy";
 
 	}
-	
-    
+
     
     
     
@@ -763,6 +953,9 @@ int main( int argc, char *argv[] ){
 	myreact = new ISSReaction(name_react_file, myset, flag_source );
 
 	
+    
+    
+    
 	//-------------------//
 	// Online monitoring //
 	//-------------------//
@@ -781,6 +974,7 @@ int main( int argc, char *argv[] ){
         
         
 
+        
 		// Start the HTTP server from the main thread (should usually do this)
 		start_http();
 		gSystem->ProcessEvents();
@@ -811,6 +1005,7 @@ int main( int argc, char *argv[] ){
     
     
 	do_convert(bool(input_dataspy.size())); //Converter / if spy  - true
+    
     
     
 	if( !flag_source && !flag_autocal ) {

@@ -999,7 +999,7 @@ void ISSHistogrammer::Terminate() {
 void ISSHistogrammer::SetInputFile( std::vector<std::string> input_file_names, bool flag_spy) {
 	
 	/// Overlaaded function for a single file or multiple files
-    dattaspy_class->dataSpyVerbose(0);
+   // dattaspy_class->dataSpyVerbose(0);
     
 	input_tree = new TChain( "evt_tree" );
 	for( unsigned int i = 0; i < input_file_names.size(); i++ ) {
